@@ -65,7 +65,7 @@ public class SignUpGUI extends javax.swing.JFrame {
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setText("Discuss it together with us!");
         jPanel2.add(jLabel5);
-        jLabel5.setBounds(120, 310, 207, 30);
+        jLabel5.setBounds(120, 310, 220, 30);
 
         jLabel7.setFont(new java.awt.Font("Franklin Gothic Medium Cond", 0, 36)); // NOI18N
         jLabel7.setForeground(new java.awt.Color(255, 255, 255));
