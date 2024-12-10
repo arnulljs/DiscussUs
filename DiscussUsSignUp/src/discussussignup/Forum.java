@@ -1,15 +1,14 @@
-package discussussignup;
+package dicussed;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Forum {
-    private String forumId;       // Unique ID for the forum
-    private String title;         // Title or topic of the forum
-    private User creator;         // User who created the forum
-    private List<Post> posts;     // List of posts in the forum
+    private String forumId;
+    private String title;
+    private User creator;
+    private List<Post> posts;
 
-    // Constructor
     public Forum(String forumId, String title, User creator) {
         this.forumId = forumId;
         this.title = title;
