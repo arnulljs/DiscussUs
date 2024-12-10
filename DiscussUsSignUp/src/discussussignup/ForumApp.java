@@ -11,7 +11,6 @@ import java.util.List;
 
 public class ForumApp {
     private JFrame mainFrame;
-    private JTextArea displayArea;
     private List<Forum> forums; // List to store multiple forums
     private Forum activeForum; // Currently selected forum
     private User loggedInUser;
@@ -41,7 +40,7 @@ public class ForumApp {
         initSignUpPanel();
 
         // Default user (for demonstration purposes)
-        User defaultUser = new User("U001", "Alice", "alice@example.com");
+        User defaultUser = new User("U001", "Alice", "alice@example.com", "password123");
         users.add(defaultUser); // Add the default user to the list
 
         // Set up initial view to show login screen
@@ -168,7 +167,7 @@ public class ForumApp {
         }
 
         // Register the new user
-        User newUser = new User(studentId, name, email);
+        User newUser = new User(studentId, name, email, password);
         users.add(newUser);
         showMessage("Sign-up successful! Please log in.", Color.GREEN);
         switchToPanel(loginPanel); // After sign-up, go back to login screen
@@ -241,38 +240,64 @@ public class ForumApp {
     private void switchToForumPanel() {
         JPanel forumPanel = new JPanel(new BorderLayout());
 
-        // Forum title
         JLabel forumTitleLabel = new JLabel(activeForum.getTitle(), JLabel.CENTER);
         forumTitleLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
-        // Posts display area
         JPanel postsPanel = new JPanel();
         postsPanel.setLayout(new BoxLayout(postsPanel, BoxLayout.Y_AXIS));
 
         for (Post post : activeForum.getPosts()) {
-            // Display post details (Content and file info)
+            JPanel postPanel = new JPanel();
+            postPanel.setLayout(new BoxLayout(postPanel, BoxLayout.Y_AXIS));
+
             JTextArea postDetailsArea = new JTextArea(post.displayPost());
             postDetailsArea.setEditable(false);
             postDetailsArea.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
             postDetailsArea.setWrapStyleWord(true);
             postDetailsArea.setLineWrap(true);
-            postDetailsArea.setCaretPosition(0); // Ensure the content starts at the top
+            postDetailsArea.setCaretPosition(0);
+            postPanel.add(postDetailsArea);
 
-            postsPanel.add(postDetailsArea);
+            JPanel commentsPanel = new JPanel();
+            commentsPanel.setLayout(new BoxLayout(commentsPanel, BoxLayout.Y_AXIS));
+            commentsPanel.setVisible(false); // Start hidden
 
-            // Display image if available
-            JLabel imageLabel = post.getImageLabel();  // Get the image label using the getImageLabel method
-            if (imageLabel != null) {
-                // Create a panel to hold the image and allow it to scale properly
-                JPanel imagePanel = new JPanel();
-                imagePanel.add(imageLabel);  // Add the actual image to the posts panel
-                postsPanel.add(imagePanel);
-            }
+            JButton commentsButton = new JButton("View Comments");
+            commentsButton.addActionListener(e -> {
+                commentsPanel.removeAll(); // Clear previously displayed comments
+
+                if (post.getCommentsForum().getPosts().isEmpty()) {
+                    commentsPanel.add(new JLabel("No comments available."));
+                } else {
+                    displayComments(post.getCommentsForum(), commentsPanel); // Display comments
+                }
+
+                // Add buttons to comments panel
+                JButton hideCommentsButton = new JButton("Hide Comments");
+                hideCommentsButton.addActionListener(hideEvent -> {
+                    commentsPanel.setVisible(false);
+                    commentsButton.setEnabled(true); // Re-enable the View Comments button
+                });
+
+                JButton addCommentButton = new JButton("Add Comment");
+                addCommentButton.addActionListener(e1 -> openAddCommentDialog(post.getCommentsForum()));
+
+                commentsPanel.add(hideCommentsButton);
+                commentsPanel.add(addCommentButton);
+                commentsPanel.setVisible(true); // Show comments panel
+                commentsButton.setEnabled(false); // Disable the View Comments button when comments are shown
+
+                commentsPanel.revalidate(); // Refresh comments panel
+                commentsPanel.repaint();
+            });
+
+            postPanel.add(commentsButton); // Add the View Comments button
+            postPanel.add(commentsPanel);   // Add comments panel to post panel
+            postsPanel.add(postPanel);       // Finally, add post panel to the main posts panel
         }
 
         JScrollPane postsScrollPane = new JScrollPane(postsPanel);
 
-        // Buttons for adding posts and going back
         JPanel buttonPanel = new JPanel();
         JButton addPostButton = new JButton("Add Post");
         JButton backToForumSelectionButton = new JButton("Back");
@@ -290,7 +315,44 @@ public class ForumApp {
         switchToPanel(forumPanel);
     }
 
+    private void displayComments(Forum commentsForum, JPanel commentsPanel) {
+        for (Post comment : commentsForum.getPosts()) {
+            JTextArea commentArea = new JTextArea(comment.displayPost());
+            commentArea.setEditable(false);
+            commentArea.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+            commentArea.setWrapStyleWord(true);
+            commentArea.setLineWrap(true);
+            commentArea.setCaretPosition(0);
+            commentsPanel.add(commentArea);
+        }
+        commentsPanel.revalidate();
+        commentsPanel.repaint();
+    }
 
+
+
+    private void openAddCommentDialog(Forum commentsForum) {
+        JPanel commentPanel = new JPanel(new BorderLayout());
+        JTextArea commentArea = new JTextArea(10, 20);
+        commentArea.setLineWrap(true);
+        commentArea.setWrapStyleWord(true);
+        commentArea.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+
+        commentPanel.add(new JLabel("Write your comment below:"), BorderLayout.NORTH);
+        commentPanel.add(new JScrollPane(commentArea), BorderLayout.CENTER);
+
+        int result = JOptionPane.showConfirmDialog(mainFrame, commentPanel, "Add Comment", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            String commentContent = commentArea.getText().trim();
+            if (!commentContent.isEmpty()) {
+                Post newComment = new Post(loggedInUser, commentContent, null, null); // No files or images for comments
+                commentsForum.addPost(newComment);
+                JOptionPane.showMessageDialog(mainFrame, "Comment added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(mainFrame, "Comment cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
     private void openAddPostDialog() {
         // Panel for creating a post
@@ -389,9 +451,6 @@ public class ForumApp {
         mainFrame.revalidate();
         mainFrame.repaint();
     }
-
-
-
 
     // Log out and return to login panel
     private void logout() {
