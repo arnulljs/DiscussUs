@@ -1,4 +1,4 @@
-package dicussed;
+package discussussignup;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
