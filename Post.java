@@ -1,7 +1,5 @@
 package discussussignup;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -9,16 +7,14 @@ public class Post {
     private User user;
     private LocalDateTime dateTime;
     private String content;
-    private String filePath;
-    private String imagePath;
+    private String filePath; // Retained filePath
     private Forum commentsForum; // Forum associated with this post for comments
 
     public Post(User user, String content, String filePath, String imagePath) {
         this.user = user;
         this.dateTime = LocalDateTime.now();
         this.content = content;
-        this.filePath = filePath;
-        this.imagePath = imagePath;
+        this.filePath = filePath; // Storing filePath
         this.commentsForum = new Forum("C" + System.currentTimeMillis(), "Comments on Post", user); // Generate unique ID for comments forum
     }
 
@@ -33,29 +29,23 @@ public class Post {
     public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
-    public String getFilePath() { return filePath; }
-    public void setFilePath(String filePath) { this.filePath = filePath; }
-    public String getImagePath() { return imagePath; }
-    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
-    
+    public String getFilePath() { return filePath; } // Getter for filePath
+    public void setFilePath(String filePath) { this.filePath = filePath; } // Setter for filePath
 
-    // Method to display the post
+    // Method to display the post with clickable file path
     public String displayPost() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return "Posted by: " + user.getName() + " (User ID: " + user.getId() + ")\n" +
-               "Date: " + dateTime.format(formatter) + "\n" +
-               "Content:\n" + content + "\n" +
-               (filePath != null ? "File: " + filePath + "\n" : "") +
-               (imagePath != null ? "Image attached\n" : "");
-    }
+        StringBuilder displayString = new StringBuilder();
+        displayString.append("<html>");
+        displayString.append("Posted by: ").append(user.getName()).append(" (User ID: ").append(user.getId()).append(")<br>");
+        displayString.append("Date: ").append(dateTime.format(formatter)).append("<br>");
+        displayString.append("Content:<br>").append(content).append("<br>");
 
-    public JLabel getImageLabel() {
-        if (imagePath != null && !imagePath.isEmpty()) {
-            ImageIcon icon = new ImageIcon(imagePath);
-            if (icon.getIconWidth() > 0 && icon.getIconHeight() > 0) {
-                return new JLabel(icon);
-            }
+        if (filePath != null) {
+            displayString.append("<a href=\"").append(filePath).append("\">File: ").append(filePath).append("</a><br>");
         }
-        return null;
+        
+        displayString.append("</html>");
+        return displayString.toString(); // Return HTML string
     }
 }
