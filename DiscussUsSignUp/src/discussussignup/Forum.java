@@ -1,4 +1,4 @@
-package dicussed;
+package discussussignup;
 
 import java.util.ArrayList;
 import java.util.List;
